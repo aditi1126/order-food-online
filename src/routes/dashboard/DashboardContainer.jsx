@@ -19,7 +19,7 @@ const styles = {
   cartItemsContainer: { display: "flex", flexDirection: "column" },
   cartItem: { display: "flex", backgroundColor: "white", justifyContent: "space-between", marginBottom: "1rem" },
   emptyCartContainer: { display: "flex", flex: 1, flexDirection: "column", alignItems: "center" },
-}
+};
 
 export default class DashboardContainer extends Component {
 
@@ -215,8 +215,7 @@ export default class DashboardContainer extends Component {
   );
 
   render(){
-    console.log('render called and state:', this.state);
-    if(this.state.foodMenu.length === 0)
+    if(Object.keys(this.state.staticData).length === 0 || this.state.foodMenu.length === 0)
       return (
         this.renderLoader()
       );
