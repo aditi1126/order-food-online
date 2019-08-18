@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
+import { Link } from "react-router-dom";
 
+import LoadingScreen from "../common/LoadingScreen";
 import { getStaticData, getFoodMenu} from "../../services/dashboard/DashboardServices";
 
 export default class DashboardContainer extends Component {
@@ -27,35 +29,25 @@ export default class DashboardContainer extends Component {
     this.fetchFoodMenu();
   };
 
-  renderHeader = () => {
-    const { headerData } = this.state.staticData;
-    return (
-    <div style={{ backgroundColor: "red", position: "fixed", top: 0, left: 0, right: 0 }}>
-      {headerData.description}
-    </div>
-  )};
-
   renderFooter = () => {
     const { footerData } = this.state.staticData;
     return (
-    <div style={{ backgroundColor: "red", position: "fixed", bottom: 0, left: 0, right: 0 }}>
+    <div style={{ position: "fixed", bottom: 0, right: 0 }}>
       {footerData.description}
     </div>
   )};
 
   renderLoader = () => (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>Loading...</div>
+    <LoadingScreen />
   );
 
   renderMenu = () => (
-    <div style={{ backgroundColor: "lightblue", display: "flex", flex: 2 }}>
-      {this.renderFilterSection()}
+    <div style={{ display: "flex", flex: 2 }}>
       {this.renderFoodMenu()}
     </div>
   );
 
   applyFilter = (filter) => {
-    console.log("filter:", filter);
     let newArray = [];
     switch (filter) {
       case "MainCourse":
@@ -90,8 +82,8 @@ export default class DashboardContainer extends Component {
   renderFilterSection = () => {
     const { filtersData } = this.state.staticData;
     return (
-    <div style={{ backgroundColor: "green", display: "flex", flex: 1, flexDirection: "column" }}>
-      <div>{filtersData.heading}</div>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+      <div style={{ fontWeight: 800, marginBottom: "1rem" }}>{filtersData.heading}</div>
       {
         filtersData.filtersArray.map(filter => (
           <div>
@@ -110,7 +102,7 @@ export default class DashboardContainer extends Component {
   };
 
   renderAddToCartButton = (buttonText, dish) => (
-    <button onClick={() => this.addToCart(dish)}>
+    <button onClick={() => this.addToCart(dish)} style={{ borderRadius: "1rem", height: "2rem" }}>
       {buttonText}
     </button>
   );
@@ -121,38 +113,29 @@ export default class DashboardContainer extends Component {
   };
 
   renderFoodMenu = () => {
-    const { staticData, foodMenu, foodList } = this.state;
+    const { staticData, foodList } = this.state;
     const { foodMenuData } = staticData;
     console.log('render food menu called');
     console.log('foodList is:', foodList);
     return (
-      <div style={{ display: "flex", flex: 2, overflowY: "auto", flexDirection: "column", backgroundColor: "purple" }}>
-
-        <div>
-          <input type="text" placeholder={foodMenuData.searchText} onChange={(e) => this.searchFoodItem(e.target.value)} style={{ width: "30rem" }}/>
-        </div>
-
+      <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
+          <input type="text" placeholder={foodMenuData.searchText} onChange={(e) => this.searchFoodItem(e.target.value)} style={{ borderRadius: "1rem", height: "2rem", outline: "none", paddingLeft: "1rem", fontWeight: "bold", marginBottom: "1rem" }}/>
         {
           foodList.map(dish => (
-            <div style={{ backgroundColor: "yellow", display: "flex", flex: 1, marginBottom: "1rem" }} key={dish.key}>
+            <div style={{ marginBottom: "1rem", display: "flex" }} key={dish.key}>
               <img src={dish.image}
               />
-              <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+              <div>
                   <div>{dish.key}</div>
                   <div>{dish.ingredients}</div>
-                <div style={{ display: "flex" }}>
                   <div style={{textDecorationLine: (dish.price !== dish.discountedPrice) ?'line-through': 'none', textDecorationStyle: 'solid'}}>Rs.{dish.price}</div>
                   {dish.price !== dish.discountedPrice && <div>{dish.discountedPrice}</div>}
-                </div>
-                  <div style={{ display: "flex", justifyContent: "space-between", backgroundColor: "red" }}>
                   <div>{dish.rating}/5</div>
                   {this.renderAddToCartButton(foodMenuData.addbuttonText, dish)}
-                  </div>
               </div>
             </div>
           ))
         }
-
       </div>
     );
   };
@@ -175,15 +158,15 @@ export default class DashboardContainer extends Component {
   };
 
   getConfirmButton = () => (
-    <button onClick={() => alert("Order placed! Your order will be delivered in next 30 mins")} style={{ color: "blue" }}>
-      Confirm Order
-    </button>
+    <div style={{ backgroundColor: "lightGrey", borderRadius: "1rem", height: "2rem" }}>
+      <Link to="/order-placed">Confirm Order</Link>
+    </div>
   );
 
   renderCartItems = () => (
-    <div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
       {this.state.cartItems.map(item => (
-      <div style={{ display: "flex", backgroundColor: "pink" }}>
+      <div style={{ display: "flex", backgroundColor: "white", marginBottom: "1rem", justifyContent: "space-between" }}>
        <div>{item.key}</div>
         <div>{item.discountedPrice}</div>
       </div>
@@ -196,8 +179,8 @@ export default class DashboardContainer extends Component {
   renderOrderSummary = () => {
     const { summaryData } = this.state.staticData;
     return (
-    <div style={{ backgroundColor: "coral", display: "flex", flex: 1, flexDirection: "column", alignItems: "center" }}>
-      <div>{summaryData.title}</div>
+    <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center" }}>
+      <div style={{ fontWeight: 800, marginBottom: "1rem" }}>{summaryData.title}</div>
       {this.state.cartItems.length === 0 ? this.renderEmptyCart() : this.renderCartItems() }
     </div>
 )};
@@ -209,9 +192,9 @@ export default class DashboardContainer extends Component {
         this.renderLoader()
       );
     return(
-      <div style={{ backgroundColor: "yellow", minHeight: "100vh", display: "flex", flex: 1, flexDirection: "column" }}>
-        {this.renderHeader()}
-        <div style={{ display: "flex", flex: 1, marginTop: "2rem" }}>
+      <div style={{ backgroundColor: "lightGrey", display: "flex" }}>
+        <div style={{ display: "flex", paddingTop: "1rem", flex: 1 }}>
+          {this.renderFilterSection()}
           {this.renderMenu()}
           {this.renderOrderSummary()}
         </div>
