@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { PureComponent } from 'react';
 import { Link } from "react-router-dom";
 
 import Dashboard from "./Dashboard";
@@ -21,8 +21,7 @@ const styles = {
   emptyCartContainer: { display: "flex", flex: 1, flexDirection: "column", alignItems: "center" },
 };
 
-export default class DashboardContainer extends Component {
-
+export default class DashboardContainer extends PureComponent {
 
   state = {
     staticData: {},
@@ -91,7 +90,7 @@ export default class DashboardContainer extends Component {
           <div>
           <div key={filter.key}>{filter.title}</div>
             {filter.subTitles.map(category => (
-              <div key={category.key} onClick={() => this.applyFilter(category.key)} style={{ color: category.key === this.state.filter ? "blue" : "black" }}>{category.value}</div>
+              <div key={category.key} onClick={() => this.applyFilter(category.key)} style={{ color: "blue", fontWeight: (category.key === this.state.filter) ? "bold" : "normal" }}>{category.value}</div>
             ))}
           </div>
         ))

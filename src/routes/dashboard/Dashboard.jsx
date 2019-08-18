@@ -1,8 +1,13 @@
-import React from 'react';
+import React, { memo } from 'react';
+
+const styles = {
+	outerContainer: { display: "flex", minHeight: "100vh" },
+	content: { display: "flex", flex: 1, backgroundColor: "#fff" },
+};
 
 const Dashboard = (props) => (
-			<div style={{ backgroundColor: "#fff", display: "flex", minHeight: "100vh" }}>
-				<div style={{ display: "flex", paddingTop: "1rem", flex: 1 }}>
+			<div style={styles.outerContainer}>
+				<div style={styles.content}>
 					{props.renderFilterSection()}
 					{props.renderMenu()}
 					{props.renderOrderSummary()}
@@ -11,4 +16,4 @@ const Dashboard = (props) => (
 			</div>
 );
 
-export default Dashboard;
+export default memo(Dashboard);
