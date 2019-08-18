@@ -1,15 +1,39 @@
 import React, { Component } from 'react';
 import { Link } from "react-router-dom";
 
+import Dashboard from "./Dashboard";
 import LoadingScreen from "../common/LoadingScreen";
 import { getStaticData, getFoodMenu} from "../../services/dashboard/DashboardServices";
 
+const styles = {
+  footerStyles: {
+		position: "fixed", bottom: 0, right: 0,
+	},
+  filtersContainer: { display: "flex", flexDirection: "column", flex: 1 },
+  boldText: { fontWeight: 800, marginBottom: "1rem" },
+  buttonStyles: { borderRadius: "1rem", height: "2rem", marginTop: "2rem", outline: "none" },
+  foodMenuContainer : { display: "flex", flexDirection: "column", flex: 1 },
+  searchBar: { borderRadius: "1rem", height: "2rem", outline: "none", paddingLeft: "1rem", fontWeight: "bold", marginBottom: "1rem" },
+  dishContainer: { marginBottom: "1rem", display: "flex" },
+  discountedPrice: { color: "blue", marginLeft: "1rem" },
+  cartItemsContainer: { display: "flex", flexDirection: "column" },
+  cartItem: { display: "flex", backgroundColor: "white", justifyContent: "space-between", marginBottom: "1rem" },
+  emptyCartContainer: { display: "flex", flex: 1, flexDirection: "column", alignItems: "center" },
+}
+
 export default class DashboardContainer extends Component {
+
 
   state = {
     staticData: {},
     foodMenu: [],
+    foodList: [],
     cartItems: [],
+  };
+
+  componentDidMount() {
+    this.fetchStaticData();
+    this.fetchFoodMenu();
   };
 
   fetchStaticData = () => {
@@ -24,30 +48,8 @@ export default class DashboardContainer extends Component {
     });
   };
 
-   componentDidMount() {
-    this.fetchStaticData();
-    this.fetchFoodMenu();
-  };
-
-  renderFooter = () => {
-    const { footerData } = this.state.staticData;
-    return (
-    <div style={{ position: "fixed", bottom: 0, right: 0 }}>
-      {footerData.description}
-    </div>
-  )};
-
-  renderLoader = () => (
-    <LoadingScreen />
-  );
-
-  renderMenu = () => (
-    <div style={{ display: "flex", flex: 2 }}>
-      {this.renderFoodMenu()}
-    </div>
-  );
-
   applyFilter = (filter) => {
+    this.setState({ filter });
     let newArray = [];
     switch (filter) {
       case "MainCourse":
@@ -82,14 +84,14 @@ export default class DashboardContainer extends Component {
   renderFilterSection = () => {
     const { filtersData } = this.state.staticData;
     return (
-    <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-      <div style={{ fontWeight: 800, marginBottom: "1rem" }}>{filtersData.heading}</div>
+    <div style={styles.filtersContainer}>
+      <div style={styles.boldText}>{filtersData.heading}</div>
       {
         filtersData.filtersArray.map(filter => (
           <div>
           <div key={filter.key}>{filter.title}</div>
             {filter.subTitles.map(category => (
-              <div key={category.key} onClick={() => this.applyFilter(category.key)} style={{ color: "blue" }}>{category.value}</div>
+              <div key={category.key} onClick={() => this.applyFilter(category.key)} style={{ color: category.key === this.state.filter ? "blue" : "black" }}>{category.value}</div>
             ))}
           </div>
         ))
@@ -101,36 +103,38 @@ export default class DashboardContainer extends Component {
         this.setState(prevState => ({ cartItems: [ ...prevState.cartItems, dish ] }));
   };
 
-  renderAddToCartButton = (buttonText, dish) => (
-    <button onClick={() => this.addToCart(dish)} style={{ borderRadius: "1rem", height: "2rem" }}>
-      {buttonText}
-    </button>
-  );
 
   searchFoodItem = (keyword) => {
     const newList = this.state.foodMenu.filter(item => item.key.toLowerCase().includes(keyword));
     this.setState({ foodList: newList });
   };
 
+  renderAddToCartButton = (buttonText, dish) => (
+    <button onClick={() => this.addToCart(dish)} style={styles.buttonStyles}>
+      <div style={{ color: "blue", fontWeight: 800 }}>{buttonText}</div>
+    </button>
+  );
+
+
   renderFoodMenu = () => {
-    const { staticData, foodList } = this.state;
+  	const { staticData, foodList } = this.state;
     const { foodMenuData } = staticData;
-    console.log('render food menu called');
-    console.log('foodList is:', foodList);
     return (
-      <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
-          <input type="text" placeholder={foodMenuData.searchText} onChange={(e) => this.searchFoodItem(e.target.value)} style={{ borderRadius: "1rem", height: "2rem", outline: "none", paddingLeft: "1rem", fontWeight: "bold", marginBottom: "1rem" }}/>
+      <div style={styles.foodMenuContainer}>
+          <input type="text" placeholder={foodMenuData.searchText} onChange={(e) => this.searchFoodItem(e.target.value)} style={styles.searchBar}/>
         {
           foodList.map(dish => (
-            <div style={{ marginBottom: "1rem", display: "flex" }} key={dish.key}>
+            <div style={styles.dishContainer} key={dish.key}>
               <img src={dish.image}
               />
-              <div>
-                  <div>{dish.key}</div>
+              <div style={{ marginLeft: "2rem" }}>
+                  <div style={styles.boldText}>{dish.key}</div>
                   <div>{dish.ingredients}</div>
-                  <div style={{textDecorationLine: (dish.price !== dish.discountedPrice) ?'line-through': 'none', textDecorationStyle: 'solid'}}>Rs.{dish.price}</div>
-                  {dish.price !== dish.discountedPrice && <div>{dish.discountedPrice}</div>}
-                  <div>{dish.rating}/5</div>
+                <div style={{ display: "flex" }}>
+                  <div style={{textDecorationLine: (dish.price !== dish.discountedPrice) ?'line-through': 'none', textDecorationStyle: 'solid', color: (dish.price !== dish.discountedPrice) ? 'red': 'blue', }}>Rs.{dish.price}</div>
+                  {dish.price !== dish.discountedPrice && <div style={styles.discountedPrice}>{dish.discountedPrice}</div>}
+                </div>
+                  <div>Rating {dish.rating}/5</div>
                   {this.renderAddToCartButton(foodMenuData.addbuttonText, dish)}
               </div>
             </div>
@@ -143,35 +147,40 @@ export default class DashboardContainer extends Component {
   renderEmptyCart = () => {
     const { summaryData } = this.state.staticData;
     return (
-      <div style={{ display: "flex", flex: 1, flexDirection: "column", alignItems: "center" }}>
+      <div style={styles.emptyCartContainer}>
         <img
           src={summaryData.image}
         />
-        <div>
+        <div style={{ marginTop: "2rem" }}>
           {summaryData.description}
         </div>
       </div>
-    )};
+    )
+  };
 
   getTotalBill = () => {
     return this.state.cartItems.reduce((total, num) => total + num.discountedPrice, 0);
   };
 
   getConfirmButton = () => (
-    <div style={{ backgroundColor: "lightGrey", borderRadius: "1rem", height: "2rem" }}>
-      <Link to="/order-placed">Confirm Order</Link>
-    </div>
+    <button style={styles.buttonStyles}>
+      <div style={{ fontWeight: 800 }}>
+        <Link to="/order-placed">
+        Confirm Order
+        </Link>
+      </div>
+    </button>
   );
 
   renderCartItems = () => (
-    <div style={{ display: "flex", flexDirection: "column" }}>
+    <div style={styles.cartItemsContainer}>
       {this.state.cartItems.map(item => (
-      <div style={{ display: "flex", backgroundColor: "white", marginBottom: "1rem", justifyContent: "space-between" }}>
+      <div style={styles.cartItem}>
        <div>{item.key}</div>
-        <div>{item.discountedPrice}</div>
+        <div style={styles.discountedPrice}>Rs.{item.discountedPrice}</div>
       </div>
     ))}
-      Total bill: {this.getTotalBill()}
+      <div style={styles.boldText}>Total bill: Rs.{this.getTotalBill()}</div>
       {this.getConfirmButton()}
     </div>
   );
@@ -183,7 +192,27 @@ export default class DashboardContainer extends Component {
       <div style={{ fontWeight: 800, marginBottom: "1rem" }}>{summaryData.title}</div>
       {this.state.cartItems.length === 0 ? this.renderEmptyCart() : this.renderCartItems() }
     </div>
-)};
+		)
+  };
+
+  renderFooter = () => {
+    const { footerData } = this.state.staticData;
+    return (
+      <div style={styles.footerStyles}>
+        {footerData.description}
+      </div>
+    )
+  };
+
+  renderLoader = () => (
+    <LoadingScreen />
+  );
+
+  renderMenu = () => (
+    <div style={{ display: "flex", flex: 2 }}>
+      {this.renderFoodMenu()}
+    </div>
+  );
 
   render(){
     console.log('render called and state:', this.state);
@@ -192,14 +221,16 @@ export default class DashboardContainer extends Component {
         this.renderLoader()
       );
     return(
-      <div style={{ backgroundColor: "lightGrey", display: "flex" }}>
-        <div style={{ display: "flex", paddingTop: "1rem", flex: 1 }}>
-          {this.renderFilterSection()}
-          {this.renderMenu()}
-          {this.renderOrderSummary()}
-        </div>
-        {this.renderFooter()}
-      </div>
+      <Dashboard
+        staticData={this.state.staticData}
+        foodMenu={this.state.foodMenu}
+        foodList={this.state.foodList}
+        cartItems={this.state.cartItems}
+        renderFilterSection={this.renderFilterSection}
+        renderMenu={this.renderMenu}
+        renderOrderSummary={this.renderOrderSummary}
+        renderFooter={this.renderFooter}
+      />
     )
   }
 };
